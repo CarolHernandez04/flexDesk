@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserRole {
+  ADMIN
+  EMPLOYEE
+}
+
+enum DeskStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+}
+
+enum TimeSlot {
+  MORNING
+  AFTERNOON
+  FULL_DAY
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+// ============================================================================
+// MODELS
+// ============================================================================
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  password  String
+  name      String?
+  role      UserRole   @default(EMPLOYEE)
+  department String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  
+  // Relations
+  bookings  Booking[]
+  
+  @@index([email])
+}
+
+model Desk {
+  id        String     @id @default(cuid())
+  identifier String    @unique // e.g., "DESK-A1", "DESK-B2"
+  status    DeskStatus @default(AVAILABLE)
+  department String?
+  location  String?    // Floor/Zone information
+  features  String[]   // e.g., ["monitor", "standing_desk", "window"]
+  
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  
+  // Relations
+  bookings  Booking[]
+  
+  @@index([status])
+  @@index([department])
+}
+
+model Booking {
+  id        String     @id @default(cuid())
+  userId    String
+  deskId    String
+  date      DateTime
+  timeSlot  TimeSlot
+  status    BookingStatus @default(PENDING)
+  notes     String?
+  
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  cancelledAt DateTime?
+  
+  // Foreign Keys
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  desk      Desk       @relation(fields: [deskId], references: [id], onDelete: Cascade)
+  
+  @@unique([deskId, date, timeSlot]) // Prevent double-booking
+  @@index([userId])
+  @@index([deskId])
+  @@index([date])
+  @@index([status])
+}
+
+model MeetingRoom {
+  id        String     @id @default(cuid())
+  name      String
+  capacity  Int        // Number of people
+  floor     Int?
+  location  String?
+  features  String[]   // e.g., ["projector", "whiteboard", "video_conference"]
+  status    DeskStatus @default(AVAILABLE)
+  
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  
+  // Relations
+  bookings  RoomBooking[]
+  
+  @@index([floor])
+  @@index([status])
+}
+
+model RoomBooking {
+  id        String     @id @default(cuid())
+  roomId    String
+  userId    String
+  date      DateTime
+  startTime String     // e.g., "09:00"
+  endTime   String     // e.g., "10:00"
+  status    BookingStatus @default(PENDING)
+  notes     String?
+  
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  cancelledAt DateTime?
+  
+  // Foreign Keys
+  room      MeetingRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  @@index([roomId])
+  @@index([date])
+  @@index([status])
+}
