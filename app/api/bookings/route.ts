@@ -7,7 +7,7 @@ import { z } from "zod";
 
 const bookingSchema = z.object({
   deskId: z.string(),
-  date: z.string().datetime(),
+  date: z.string().min(1, "Date is required"),
   timeSlot: z.enum(["MORNING", "AFTERNOON", "FULL_DAY"]),
   notes: z.string().optional(),
 });
@@ -71,9 +71,9 @@ export async function POST(req: Request) {
       where: {
         deskId_date_timeSlot: {
           deskId,
-          date: new Date(date),
+          date: new Date(`${date}T00:00:00.000Z`),
           timeSlot,
-        },
+      },
       },
     });
 
@@ -87,11 +87,11 @@ export async function POST(req: Request) {
     const booking = await prisma.booking.create({
       data: {
         userId: session.user.id,
-        deskId,
-        date: new Date(date),
-        timeSlot,
-        notes,
-        status: "CONFIRMED",
+       deskId,
+       date: new Date(`${date}T00:00:00.000Z`),
+       timeSlot,
+       notes,
+       status: "CONFIRMED",
       },
       include: {
         desk: {
