@@ -71,7 +71,7 @@ export default function DashboardClient() {
 
         const data = await response.json();
         setDesks(data);
-      } catch (err) {
+      } catch{
         setError("Failed to load desks");
       }
     };
@@ -83,7 +83,7 @@ export default function DashboardClient() {
 
         const data = await response.json();
         setBookings(data);
-      } catch (err) {
+      } catch{
         setError("Failed to load bookings");
       }
     };
@@ -134,7 +134,7 @@ export default function DashboardClient() {
       setDesks(desksData);
 
       setTimeout(() => setSuccess(""), 3000);
-    } catch (err) {
+    } catch{
       setError("Failed to book desk");
     }
   };
@@ -153,7 +153,7 @@ export default function DashboardClient() {
       setBookings(bookings.filter((b) => b.id !== bookingId));
 
       setTimeout(() => setSuccess(""), 3000);
-    } catch (err) {
+    } catch{
       setError("Failed to cancel booking");
     }
   };
@@ -395,7 +395,7 @@ export default function DashboardClient() {
             ) : (
               <div className="p-6 text-center">
                 <p className="text-gray-600">
-                  You don't have any active bookings yet.
+                  {"You don't have any active bookings yet."}
                 </p>
               </div>
             )}

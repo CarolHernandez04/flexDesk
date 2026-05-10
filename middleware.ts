@@ -1,8 +1,10 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import type { JWT } from "next-auth/jwt";
 
 export const middleware = withAuth(
-  function middleware(request) {
+  function middleware(request: NextRequest & { nextauth: { token: JWT | null } }) {
     const token = request.nextauth.token;
     const pathname = request.nextUrl.pathname;
 
@@ -23,7 +25,7 @@ export const middleware = withAuth(
 
     // Admin-only routes
     if (pathname.startsWith("/admin")) {
-      if (!token || (token as any).role !== "ADMIN") {
+      if (!token || token.role !== "ADMIN") {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
     }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export async function GET(req: Request) {
   try {
@@ -15,7 +16,7 @@ export async function GET(req: Request) {
     const department = searchParams.get("department");
 
     // Build query filter
-    const where: any = {};
+    const where: Prisma.DeskWhereInput = {};
     if (department) {
       where.department = department;
     }
@@ -49,7 +50,7 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json(desks);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch desks" },
       { status: 500 }

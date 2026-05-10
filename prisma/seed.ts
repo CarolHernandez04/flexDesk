@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-
 import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -16,7 +15,7 @@ async function main() {
   const adminPassword = await hash("admin123", 10);
   const userPassword = await hash("user123", 10);
 
-  const admin = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email: "admin@flexdesk.com",
       password: adminPassword,
@@ -26,7 +25,7 @@ async function main() {
     },
   });
 
-  const employee1 = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email: "john@flexdesk.com",
       password: userPassword,
@@ -36,7 +35,7 @@ async function main() {
     },
   });
 
-  const employee2 = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email: "jane@flexdesk.com",
       password: userPassword,
@@ -47,13 +46,14 @@ async function main() {
   });
 
   // Create desks
-  const deskIds = [];
+  const deskIds: string[] = [];
   const departments = ["Engineering", "Sales", "Marketing", "HR"];
   const floors = [1, 2, 3];
 
   for (let floor = 0; floor < floors.length; floor++) {
     for (let i = 0; i < 12; i++) {
       const dept = departments[floor % departments.length];
+
       const desk = await prisma.desk.create({
         data: {
           identifier: `DESK-${String.fromCharCode(65 + floor)}${String(i + 1).padStart(2, "0")}`,
@@ -63,18 +63,28 @@ async function main() {
           features: ["monitor", "keyboard", "mouse"],
         },
       });
+
       deskIds.push(desk.id);
     }
   }
 
   // Create meeting rooms
-  const meetingRooms = ["Conference Room A", "Conference Room B", "Board Room", "Focus Room"];
+  const meetingRooms = [
+    "Conference Room A",
+    "Conference Room B",
+    "Board Room",
+    "Focus Room",
+  ];
 
   for (const roomName of meetingRooms) {
     await prisma.meetingRoom.create({
       data: {
         name: roomName,
-        capacity: roomName.includes("Board") ? 20 : roomName.includes("Focus") ? 4 : 10,
+        capacity: roomName.includes("Board")
+          ? 20
+          : roomName.includes("Focus")
+            ? 4
+            : 10,
         floor: Math.floor(Math.random() * 3) + 1,
         location: `Floor ${Math.floor(Math.random() * 3) + 1}`,
         features: ["projector", "whiteboard", "video_conference"],
@@ -93,8 +103,8 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
+  .catch((error) => {
+    console.error(error);
     process.exit(1);
   })
   .finally(async () => {

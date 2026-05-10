@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { compare } from "bcryptjs";
-import type { AuthOptions, Session } from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-export const authOptions: AuthOptions = {
+export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/login",
     error: "/auth/error",
@@ -44,20 +44,21 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = (user as any).role;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
-      }
-      return session;
-    },
+  async jwt({ token, user }) {
+    if (user) {
+      token.id = user.id;
+      token.role = user.role;
+    }
+    return token;
+  },
+
+  async session({ session, token }) {
+    if (session.user) {
+      session.user.id = token.id;
+      session.user.role = token.role;
+    }
+    return session;
+  },
   },
   session: {
     strategy: "jwt",

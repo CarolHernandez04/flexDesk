@@ -58,7 +58,7 @@ export default function RegisterClient() {
 
       // Redirect to login after successful registration
       router.push("/login?registered=true");
-    } catch (err) {
+    } catch{
       setError("An error occurred during registration");
     } finally {
       setIsLoading(false);

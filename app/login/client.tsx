@@ -34,7 +34,7 @@ export default function LoginClient() {
       const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
       router.push(callbackUrl);
       router.refresh();
-    } catch (err) {
+    } catch{
       setError("An error occurred during login");
     } finally {
       setIsLoading(false);
@@ -105,7 +105,7 @@ export default function LoginClient() {
           </Button>
 
           <div className="text-center text-sm">
-            <span className="text-gray-600">Don't have an account? </span>
+            <span className="text-gray-600"> {"Don't have an account?"} </span>
             <Link href="/register" className="text-blue-600 hover:text-blue-500">
               Register here
             </Link>
