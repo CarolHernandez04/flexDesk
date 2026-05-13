@@ -10,7 +10,7 @@ A production-ready web application for managing office desk and meeting room boo
 - **Real-time Availability**: View desk status in real-time
 - **Booking Management**: View, update, and cancel your reservations
 - **Meeting Room Reservations**: Book conference and meeting rooms
-- **Admin Dashboard**: Management capabilities for administrators
+- **Admin Dashboard**: Admin-only overview of users, desks and recent bookings
 
 ### Technical Features
 - ✅ Server-Side Rendering (SSR) with Next.js 14 App Router
@@ -47,20 +47,21 @@ flexdesk/
 │   │   ├── auth/                 # Authentication endpoints
 │   │   │   ├── register/         # User registration
 │   │   │   └── [...nextauth]/    # NextAuth.js configuration
-│   │   ├── desks/                # Desk management endpoints
+│   │   ├── desks/                # Desk availability endpoints
 │   │   └── bookings/             # Booking CRUD endpoints
+│   ├── admin/                    # Admin dashboard (protected, admin-only)
 │   ├── login/                    # Login page
 │   ├── register/                 # Registration page
 │   ├── dashboard/                # User dashboard (protected)
-│   ├── layout.tsx                # Root layout with SRP
+│   ├── layout.tsx                # Root layout with metadata and providers
 │   ├── page.tsx                  # Home page
 │   └── globals.css               # Global styles
 ├── components/                   # Reusable components
 │   ├── navbar.tsx                # Navigation component
 │   ├── button.tsx                # Button component
 │   ├── tabs.tsx                  # Tabs component
-│   ├── loading-skeleton.tsx       # Loading states
-│   └── session-provider.tsx       # NextAuth wrapper
+│   ├── loading-skeleton.tsx      # Loading states
+│   └── session-provider.tsx      # NextAuth wrapper
 ├── lib/                          # Utility functions
 │   ├── auth.ts                   # NextAuth configuration
 │   ├── prisma.ts                 # Prisma client instance
@@ -72,10 +73,9 @@ flexdesk/
 │   └── next-auth.d.ts            # NextAuth type extensions
 ├── middleware.ts                 # Protected route middleware
 ├── .env.example                  # Environment variables template
-├── tailwind.config.ts            # Tailwind CSS configuration
 ├── tsconfig.json                 # TypeScript configuration
 ├── next.config.ts                # Next.js configuration
-└── package.json                  # Project dependencies
+└── package.json                  # Project dependenciesflexdesk/
 ```
 
 ## 🏗️ Database Schema
@@ -230,10 +230,11 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### For Administrators
 
-- Access admin panel for desk and room management
-- Monitor office space utilization
-- Manage user roles and permissions
-- Generate usage reports (future enhancement)
+- Log in with an admin account
+- Access `/admin`
+- View total users, desks and recent bookings
+- Review desk status and booking information
+- Extend admin panel with desk editing, user management and advanced reports [Future enhancements]
 
 ## 🔐 Security Features
 
