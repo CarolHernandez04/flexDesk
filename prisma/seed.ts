@@ -48,7 +48,7 @@ async function main() {
   // Create desks
   const deskIds: string[] = [];
   const departments = ["Engineering", "Sales", "Marketing", "HR"];
-  const floors = [1, 2, 3];
+  const floors = [1, 2, 3, 4];
 
   for (let floor = 0; floor < floors.length; floor++) {
     for (let i = 0; i < 12; i++) {

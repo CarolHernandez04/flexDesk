@@ -59,6 +59,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { deskId, date, timeSlot, notes } = bookingSchema.parse(body);
 
+    const bookingDate = new Date(`${date}T00:00:00.000Z`);
+
     const desk = await prisma.desk.findUnique({
       where: { id: deskId },
     });
@@ -71,9 +73,9 @@ export async function POST(req: Request) {
       where: {
         deskId_date_timeSlot: {
           deskId,
-          date: new Date(`${date}T00:00:00.000Z`),
+          date: bookingDate,
           timeSlot,
-      },
+        },
       },
     });
 
@@ -84,24 +86,42 @@ export async function POST(req: Request) {
       );
     }
 
-    const booking = await prisma.booking.create({
-      data: {
-        userId: session.user.id,
-       deskId,
-       date: new Date(`${date}T00:00:00.000Z`),
-       timeSlot,
-       notes,
-       status: "CONFIRMED",
-      },
-      include: {
-        desk: {
-          select: {
-            identifier: true,
-            department: true,
+    const booking = existingBooking
+      ? await prisma.booking.update({
+          where: { id: existingBooking.id },
+          data: {
+            userId: session.user.id,
+            status: "CONFIRMED",
+            cancelledAt: null,
+            notes,
           },
-        },
-      },
-    });
+          include: {
+            desk: {
+              select: {
+                identifier: true,
+                department: true,
+              },
+            },
+          },
+        })
+      : await prisma.booking.create({
+          data: {
+            userId: session.user.id,
+            deskId,
+            date: bookingDate,
+            timeSlot,
+            notes,
+            status: "CONFIRMED",
+          },
+          include: {
+            desk: {
+              select: {
+                identifier: true,
+                department: true,
+              },
+            },
+          },
+        });
 
     return NextResponse.json(booking, { status: 201 });
   } catch (error) {
@@ -111,6 +131,8 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    console.error("Create booking error:", error);
 
     return NextResponse.json(
       { error: "Failed to create booking" },
