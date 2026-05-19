@@ -29,8 +29,15 @@ export const updateDeskStatusSchema = z.object({
   status: z.enum(["AVAILABLE", "OCCUPIED", "MAINTENANCE"]),
 });
 
+export const updateDeskDayStatusSchema = z.object({
+  deskId: z.string().min(1, "Desk is required"),
+  date: z.string().min(1, "Date is required"),
+  status: z.enum(["AVAILABLE", "OCCUPIED", "MAINTENANCE"]),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type BookingInput = z.infer<typeof bookingSchema>;
 export type CreateDeskInput = z.infer<typeof createDeskSchema>;
 export type UpdateDeskStatusInput = z.infer<typeof updateDeskStatusSchema>;
+export type UpdateDeskDayStatusInput = z.infer<typeof updateDeskDayStatusSchema>;

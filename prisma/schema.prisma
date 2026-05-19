@@ -25,117 +25,111 @@ enum DeskStatus {
   MAINTENANCE
 }
 
-enum TimeSlot {
-  MORNING
-  AFTERNOON
-  FULL_DAY
-}
-
 enum BookingStatus {
   PENDING
   CONFIRMED
   CANCELLED
 }
 
-// ============================================================================
-// MODELS
-// ============================================================================
+enum TimeSlot {
+  MORNING
+  AFTERNOON
+  FULL_DAY
+}
 
 model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  password  String
-  name      String?
-  role      UserRole   @default(EMPLOYEE)
+  id         String   @id @default(cuid())
+  email      String   @unique
+  password   String
+  name       String?
+  role       UserRole @default(EMPLOYEE)
   department String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  
-  // Relations
-  bookings  Booking[]
-  
-  @@index([email])
+
+  bookings     Booking[]
+  roomBookings RoomBooking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Desk {
-  id        String     @id @default(cuid())
-  identifier String    @unique // e.g., "DESK-A1", "DESK-B2"
-  status    DeskStatus @default(AVAILABLE)
+  id         String     @id @default(cuid())
+  identifier String     @unique
+  status     DeskStatus @default(AVAILABLE)
   department String?
-  location  String?    // Floor/Zone information
-  features  String[]   // e.g., ["monitor", "standing_desk", "window"]
-  
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  
-  // Relations
-  bookings  Booking[]
-  
-  @@index([status])
-  @@index([department])
+  location   String?
+  features   String[]   @default([])
+
+  bookings    Booking[]
+  dayStatuses DeskDayStatus[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DeskDayStatus {
+  id     String     @id @default(cuid())
+  deskId String
+  date   DateTime
+  status DeskStatus @default(AVAILABLE)
+
+  desk Desk @relation(fields: [deskId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([deskId, date])
 }
 
 model Booking {
-  id        String     @id @default(cuid())
-  userId    String
-  deskId    String
-  date      DateTime
-  timeSlot  TimeSlot
-  status    BookingStatus @default(PENDING)
-  notes     String?
-  
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id          String        @id @default(cuid())
+  userId      String
+  deskId      String
+  date        DateTime
+  timeSlot    TimeSlot
+  status      BookingStatus @default(CONFIRMED)
+  notes       String?
   cancelledAt DateTime?
-  
-  // Foreign Keys
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  desk      Desk       @relation(fields: [deskId], references: [id], onDelete: Cascade)
-  
-  @@unique([deskId, date, timeSlot]) // Prevent double-booking
-  @@index([userId])
-  @@index([deskId])
-  @@index([date])
-  @@index([status])
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  desk Desk @relation(fields: [deskId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([deskId, date, timeSlot])
 }
 
 model MeetingRoom {
-  id        String     @id @default(cuid())
-  name      String
-  capacity  Int        // Number of people
-  floor     Int?
-  location  String?
-  features  String[]   // e.g., ["projector", "whiteboard", "video_conference"]
-  status    DeskStatus @default(AVAILABLE)
-  
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  
-  // Relations
-  bookings  RoomBooking[]
-  
-  @@index([floor])
-  @@index([status])
+  id       String     @id @default(cuid())
+  name     String     @unique
+  capacity Int
+  floor    Int
+  location String?
+  features String[]   @default([])
+  status   DeskStatus @default(AVAILABLE)
+
+  roomBookings RoomBooking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model RoomBooking {
-  id        String     @id @default(cuid())
-  roomId    String
-  userId    String
-  date      DateTime
-  startTime String     // e.g., "09:00"
-  endTime   String     // e.g., "10:00"
-  status    BookingStatus @default(PENDING)
-  notes     String?
-  
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id          String        @id @default(cuid())
+  userId      String
+  roomId      String
+  date        DateTime
+  timeSlot    TimeSlot
+  status      BookingStatus @default(CONFIRMED)
+  notes       String?
   cancelledAt DateTime?
-  
-  // Foreign Keys
-  room      MeetingRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  
-  @@index([roomId])
-  @@index([date])
-  @@index([status])
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room MeetingRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([roomId, date, timeSlot])
 }

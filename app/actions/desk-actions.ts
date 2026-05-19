@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import {
   createDeskSchema,
   updateDeskStatusSchema,
+  updateDeskDayStatusSchema,
 } from "@/lib/validations";
 
 async function requireAdmin() {
@@ -102,4 +103,43 @@ export async function deleteDeskAction(formData: FormData) {
 
   revalidatePath("/admin");
   revalidatePath("/dashboard");
+}
+
+export async function updateDeskDayStatusAction(formData: FormData) {
+  await requireAdmin();
+
+  const parsed = updateDeskDayStatusSchema.safeParse({
+    deskId: formData.get("deskId"),
+    date: formData.get("date"),
+    status: formData.get("status"),
+  });
+
+  if (!parsed.success) {
+    throw new Error(
+      parsed.error.issues[0]?.message || "Invalid desk day status"
+    );
+  }
+
+  const statusDate = new Date(`${parsed.data.date}T00:00:00.000Z`);
+
+  await prisma.deskDayStatus.upsert({
+    where: {
+      deskId_date: {
+        deskId: parsed.data.deskId,
+        date: statusDate,
+      },
+    },
+    update: {
+      status: parsed.data.status,
+    },
+    create: {
+      deskId: parsed.data.deskId,
+      date: statusDate,
+      status: parsed.data.status,
+    },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/dashboard");
+  revalidatePath("/bookings");
 }

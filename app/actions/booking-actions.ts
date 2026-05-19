@@ -50,8 +50,19 @@ export async function createBookingAction(formData: FormData) {
     redirectWithError(date, "Desk not found");
   }
 
-  if (desk.status !== "AVAILABLE") {
-    redirectWithError(date, "This desk is not available right now");
+  const dayStatus = await prisma.deskDayStatus.findUnique({
+  where: {
+    deskId_date: {
+      deskId,
+      date: bookingDate,
+    },
+  },
+});
+
+  const effectiveStatus = dayStatus?.status || desk.status;
+
+  if (effectiveStatus !== "AVAILABLE") {
+    redirectWithError(date, "This desk is not available on this date");
   }
 
   const existingBookings: ExistingBooking[] = await prisma.booking.findMany({

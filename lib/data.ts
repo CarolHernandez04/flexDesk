@@ -1,14 +1,40 @@
 import { prisma } from "@/lib/prisma";
 
+type DeskWithDayStatus = {
+  id: string;
+  identifier: string;
+  status: string;
+  department: string | null;
+  location: string | null;
+  features?: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
+  dayStatuses: {
+    status: string;
+  }[];
+  bookings?: {
+    id: string;
+    timeSlot: string;
+    status: string;
+  }[];
+};
+
 export async function getDesksForDate(date: string, department?: string) {
   const bookingDate = new Date(`${date}T00:00:00.000Z`);
 
-  return prisma.desk.findMany({
+  const desks: DeskWithDayStatus[] = await prisma.desk.findMany({
     where: {
       department: department || undefined,
-      status: "AVAILABLE",
     },
     include: {
+      dayStatuses: {
+        where: {
+          date: bookingDate,
+        },
+        select: {
+          status: true,
+        },
+      },
       bookings: {
         where: {
           date: bookingDate,
@@ -27,6 +53,17 @@ export async function getDesksForDate(date: string, department?: string) {
       identifier: "asc",
     },
   });
+
+  return desks
+    .map((desk: DeskWithDayStatus) => {
+      const dayStatus = desk.dayStatuses[0]?.status || desk.status;
+
+      return {
+        ...desk,
+        effectiveStatus: dayStatus,
+      };
+    })
+    .filter((desk) => desk.effectiveStatus === "AVAILABLE");
 }
 
 export async function getUserBookings(userId: string) {
@@ -50,7 +87,10 @@ export async function getUserBookings(userId: string) {
   });
 }
 
-export async function getAdminDashboardData() {
+export async function getAdminDashboardData(date?: string) {
+  const selectedDate = date || new Date().toISOString().split("T")[0];
+  const adminDate = new Date(`${selectedDate}T00:00:00.000Z`);
+
   const [users, desks, bookings] = await Promise.all([
     prisma.user.findMany({
       orderBy: {
@@ -70,16 +110,22 @@ export async function getAdminDashboardData() {
       orderBy: {
         identifier: "asc",
       },
-      select: {
-        id: true,
-        identifier: true,
-        status: true,
-        department: true,
-        location: true,
+      include: {
+        dayStatuses: {
+          where: {
+            date: adminDate,
+          },
+          select: {
+            status: true,
+          },
+        },
       },
     }),
 
     prisma.booking.findMany({
+      where: {
+        date: adminDate,
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -100,9 +146,15 @@ export async function getAdminDashboardData() {
     }),
   ]);
 
+  const desksWithEffectiveStatus = desks.map((desk: DeskWithDayStatus) => ({
+    ...desk,
+    effectiveStatus: desk.dayStatuses[0]?.status || desk.status,
+  }));
+
   return {
     users,
-    desks,
+    desks: desksWithEffectiveStatus,
     bookings,
+    selectedDate,
   };
 }

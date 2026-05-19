@@ -64,11 +64,14 @@ export default async function DashboardPage({
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {desks.map((desk) => (
                 <DeskCard
-                  key={desk.id}
-                  desk={desk}
-                  selectedDate={selectedDate}
-                />
-              ))}
+                key={desk.id}
+                desk={{
+                  ...desk,
+                  bookings: desk.bookings ?? [],
+                }}
+                selectedDate={selectedDate}
+              />
+            ))}
             </div>
           ) : (
             <div className="rounded-lg border border-gray-200 bg-white p-6">
