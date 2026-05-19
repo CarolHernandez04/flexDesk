@@ -1,155 +1,103 @@
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import type { Session } from "next-auth";
+import { AdminBookingsTable } from "@/components/admin/admin-bookings-table";
+import { CreateDeskForm } from "@/components/admin/create-desk-form";
+import { DeskStatusForm } from "@/components/admin/desk-status-form";
+import { getCurrentUser } from "@/lib/auth";
+import { getAdminDashboardData } from "@/lib/data";
 
 export const metadata = {
-  title: "Admin Dashboard | FlexDesk",
-  description: "Admin dashboard for managing FlexDesk bookings and desks.",
+  title: "Admin | FlexDesk",
+  description: "Admin dashboard for managing FlexDesk.",
 };
 
 export default async function AdminPage() {
-  const session = (await getServerSession(authOptions)) as Session | null;
+  const user = await getCurrentUser();
 
-  if (!session?.user?.id) {
+  if (!user) {
     redirect("/login");
   }
 
-  if (session.user.role !== "ADMIN") {
+  if (user.role !== "ADMIN") {
     redirect("/dashboard");
   }
 
-  const [users, desks, bookings] = await Promise.all([
-    prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        department: true,
-      },
-    }),
-    prisma.desk.findMany({
-      orderBy: { identifier: "asc" },
-      select: {
-        id: true,
-        identifier: true,
-        status: true,
-        department: true,
-        location: true,
-      },
-    }),
-    prisma.booking.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-        desk: {
-          select: {
-            identifier: true,
-            department: true,
-          },
-        },
-      },
-    }),
-  ]);
+  const { users, desks, bookings } = await getAdminDashboardData();
 
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-600 mt-2">
-          Overview of users, desks and recent bookings.
+        <h1 className="text-3xl font-bold text-gray-900">
+          Admin Dashboard
+        </h1>
+        <p className="mt-2 text-gray-600">
+          Manage desks, users and bookings.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3 mb-8">
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+      <div className="mb-8 grid gap-4 md:grid-cols-3">
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <p className="text-sm text-gray-600">Users</p>
           <p className="text-3xl font-bold text-gray-900">{users.length}</p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <p className="text-sm text-gray-600">Desks</p>
           <p className="text-3xl font-bold text-gray-900">{desks.length}</p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-          <p className="text-sm text-gray-600">Recent Bookings</p>
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <p className="text-sm text-gray-600">Bookings</p>
           <p className="text-3xl font-bold text-gray-900">{bookings.length}</p>
         </div>
       </div>
 
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Desks</h2>
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="text-left px-4 py-3">Identifier</th>
-                <th className="text-left px-4 py-3">Department</th>
-                <th className="text-left px-4 py-3">Location</th>
-                <th className="text-left px-4 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {desks.map((desk) => (
-                <tr key={desk.id}>
-                  <td className="px-4 py-3 font-medium">{desk.identifier}</td>
-                  <td className="px-4 py-3">{desk.department || "-"}</td>
-                  <td className="px-4 py-3">{desk.location || "-"}</td>
-                  <td className="px-4 py-3">{desk.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <div className="space-y-8">
+        <CreateDeskForm />
 
-      <section>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Recent Bookings
-        </h2>
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="text-left px-4 py-3">User</th>
-                <th className="text-left px-4 py-3">Desk</th>
-                <th className="text-left px-4 py-3">Date</th>
-                <th className="text-left px-4 py-3">Time Slot</th>
-                <th className="text-left px-4 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {bookings.map((booking) => (
-                <tr key={booking.id}>
-                  <td className="px-4 py-3">
-                    {booking.user.name || booking.user.email}
-                  </td>
-                  <td className="px-4 py-3">{booking.desk.identifier}</td>
-                  <td className="px-4 py-3">
-                    {new Intl.DateTimeFormat("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                    }).format(new Date(booking.date))}
-                  </td>
-                  <td className="px-4 py-3">{booking.timeSlot}</td>
-                  <td className="px-4 py-3">{booking.status}</td>
+        <section>
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+            Desks
+          </h2>
+
+          <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold">
+                    Identifier
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold">
+                    Department
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold">
+                    Location
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold">
+                    Delete
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+
+              <tbody className="divide-y divide-gray-200">
+                {desks.map((desk) => (
+                  <DeskStatusForm key={desk.id} desk={desk} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section>
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+            Bookings
+          </h2>
+
+          <AdminBookingsTable bookings={bookings} />
+        </section>
+      </div>
     </main>
   );
 }

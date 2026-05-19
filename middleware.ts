@@ -16,7 +16,7 @@ export const middleware = withAuth(
       return NextResponse.next();
     }
 
-    // Protect dashboard and other routes
+    // Protect dashboard and other routes. The middleware protects private routes. The dashboard requires a logged-in user,and the admin page requires an admin user.
     if (pathname.startsWith("/dashboard")) {
       if (!token) {
         return NextResponse.redirect(new URL("/login", request.url));

@@ -1,22 +1,31 @@
-import { Metadata } from "next";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import LoginClient from "./client";
+import Link from "next/link";
+import { LoginForm } from "@/components/auth/login-form";
 
-export const dynamic = "force-dynamic";
-
-export const metadata: Metadata = {
-  title: "Login - FlexDesk",
-  description: "Sign in to your FlexDesk account",
+export const metadata = {
+  title: "Login | FlexDesk",
+  description: "Sign in to FlexDesk.",
 };
 
-export default async function LoginPage() {
-  const session = await getServerSession(authOptions);
+export default function LoginPage() {
+  return (
+    <main className="mx-auto flex min-h-[calc(100vh-80px)] max-w-md flex-col justify-center px-4 py-12">
+      <div className="rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
+        <h1 className="text-2xl font-bold text-gray-900">Sign in</h1>
+        <p className="mt-2 text-sm text-gray-600">
+          Access your FlexDesk account.
+        </p>
 
-  if (session) {
-    redirect("/dashboard");
-  }
+        <div className="mt-6">
+          <LoginForm />
+        </div>
 
-  return <LoginClient />;
+        <p className="mt-6 text-sm text-gray-600">
+          Do not have an account?{" "}
+          <Link href="/register" className="font-medium text-blue-600">
+            Create one
+          </Link>
+        </p>
+      </div>
+    </main>
+  );
 }

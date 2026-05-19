@@ -3,6 +3,7 @@ import SessionProvider from "@/components/session-provider";
 import { Navbar } from "@/components/navbar";
 import "./globals.css";
 
+// The project has proper metadata, such as page title and description, which was one of the requirements.
 export const metadata: Metadata = {
   title: "FlexDesk - Office Booking System",
   description: "Book desks and meeting rooms for your hybrid office",

@@ -1,22 +1,31 @@
-import { Metadata } from "next";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import RegisterClient from "./client";
+import Link from "next/link";
+import { RegisterForm } from "@/components/auth/register-form";
 
-export const dynamic = "force-dynamic";
-
-export const metadata: Metadata = {
-  title: "Register - FlexDesk",
-  description: "Create a new FlexDesk account",
+export const metadata = {
+  title: "Register | FlexDesk",
+  description: "Create a FlexDesk account.",
 };
 
-export default async function RegisterPage() {
-  const session = await getServerSession(authOptions);
+export default function RegisterPage() {
+  return (
+    <main className="mx-auto flex min-h-[calc(100vh-80px)] max-w-md flex-col justify-center px-4 py-12">
+      <div className="rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
+        <h1 className="text-2xl font-bold text-gray-900">Create account</h1>
+        <p className="mt-2 text-sm text-gray-600">
+          Register to start booking office desks.
+        </p>
 
-  if (session) {
-    redirect("/dashboard");
-  }
+        <div className="mt-6">
+          <RegisterForm />
+        </div>
 
-  return <RegisterClient />;
+        <p className="mt-6 text-sm text-gray-600">
+          Already have an account?{" "}
+          <Link href="/login" className="font-medium text-blue-600">
+            Sign in
+          </Link>
+        </p>
+      </div>
+    </main>
+  );
 }

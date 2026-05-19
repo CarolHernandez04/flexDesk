@@ -26,7 +26,10 @@ export function formatDateTime(date: Date) {
 export const DESK_STATUSES = {
   AVAILABLE: { label: "Available", color: "bg-green-100 text-green-800" },
   OCCUPIED: { label: "Occupied", color: "bg-red-100 text-red-800" },
-  MAINTENANCE: { label: "Maintenance", color: "bg-yellow-100 text-yellow-800" },
+  MAINTENANCE: {
+    label: "Maintenance",
+    color: "bg-yellow-100 text-yellow-800",
+  },
 };
 
 export const TIME_SLOTS = {
