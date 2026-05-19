@@ -20,6 +20,7 @@ export function BookingForm({ deskId, selectedDate }: BookingFormProps) {
         >
           Time slot
         </label>
+
         <select
           id={`timeSlot-${deskId}`}
           name="timeSlot"
@@ -30,21 +31,6 @@ export function BookingForm({ deskId, selectedDate }: BookingFormProps) {
           <option value="AFTERNOON">{TIME_SLOTS.AFTERNOON}</option>
           <option value="FULL_DAY">{TIME_SLOTS.FULL_DAY}</option>
         </select>
-      </div>
-
-      <div>
-        <label
-          htmlFor={`notes-${deskId}`}
-          className="block text-sm font-medium text-gray-700"
-        >
-          Notes
-        </label>
-        <textarea
-          id={`notes-${deskId}`}
-          name="notes"
-          placeholder="Optional notes"
-          className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-        />
       </div>
 
       <Button type="submit" variant="primary" className="w-full">

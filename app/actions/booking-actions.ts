@@ -6,6 +6,16 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { bookingSchema } from "@/lib/validations";
 
+type ExistingBooking = {
+  id: string;
+  timeSlot: string;
+  status: string;
+};
+
+function redirectWithError(date: string, message: string): never {
+  redirect(`/dashboard?date=${date}&error=${encodeURIComponent(message)}`);
+}
+
 export async function createBookingAction(formData: FormData) {
   const user = await getCurrentUser();
 
@@ -21,7 +31,10 @@ export async function createBookingAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    throw new Error(parsed.error.issues[0]?.message || "Invalid booking data");
+    redirectWithError(
+      String(formData.get("date") || ""),
+      parsed.error.issues[0]?.message || "Invalid booking data"
+    );
   }
 
   const { deskId, date, timeSlot, notes } = parsed.data;
@@ -34,27 +47,54 @@ export async function createBookingAction(formData: FormData) {
   });
 
   if (!desk) {
-    throw new Error("Desk not found");
+    redirectWithError(date, "Desk not found");
   }
 
-  const existingBooking = await prisma.booking.findUnique({
+  if (desk.status !== "AVAILABLE") {
+    redirectWithError(date, "This desk is not available right now");
+  }
+
+  const existingBookings: ExistingBooking[] = await prisma.booking.findMany({
     where: {
-      deskId_date_timeSlot: {
-        deskId,
-        date: bookingDate,
-        timeSlot,
-      },
+      deskId,
+      date: bookingDate,
+    },
+    select: {
+      id: true,
+      timeSlot: true,
+      status: true,
     },
   });
 
-  if (existingBooking && existingBooking.status !== "CANCELLED") {
-    throw new Error("Desk already booked for this time slot");
+  const activeBookings = existingBookings.filter(
+    (booking) => booking.status !== "CANCELLED"
+  );
+
+  const hasConflict = activeBookings.some((booking) => {
+    if (timeSlot === "FULL_DAY") {
+      return true;
+    }
+
+    if (booking.timeSlot === "FULL_DAY") {
+      return true;
+    }
+
+    return booking.timeSlot === timeSlot;
+  });
+
+  if (hasConflict) {
+    redirectWithError(date, "Desk already booked for this time slot");
   }
 
-  if (existingBooking) {
+  const cancelledBookingWithSameSlot = existingBookings.find(
+    (booking) =>
+      booking.timeSlot === timeSlot && booking.status === "CANCELLED"
+  );
+
+  if (cancelledBookingWithSameSlot) {
     await prisma.booking.update({
       where: {
-        id: existingBooking.id,
+        id: cancelledBookingWithSameSlot.id,
       },
       data: {
         userId: user.id,
@@ -77,7 +117,10 @@ export async function createBookingAction(formData: FormData) {
   }
 
   revalidatePath("/dashboard");
+  revalidatePath("/bookings");
   revalidatePath("/admin");
+
+  redirect(`/dashboard?date=${date}`);
 }
 
 export async function cancelBookingAction(formData: FormData) {
@@ -88,6 +131,10 @@ export async function cancelBookingAction(formData: FormData) {
   }
 
   const bookingId = String(formData.get("bookingId"));
+
+  if (!bookingId) {
+    throw new Error("Booking id is required");
+  }
 
   const booking = await prisma.booking.findUnique({
     where: {
@@ -123,5 +170,6 @@ export async function cancelBookingAction(formData: FormData) {
   });
 
   revalidatePath("/dashboard");
+  revalidatePath("/bookings");
   revalidatePath("/admin");
 }

@@ -6,6 +6,7 @@ export async function getDesksForDate(date: string, department?: string) {
   return prisma.desk.findMany({
     where: {
       department: department || undefined,
+      status: "AVAILABLE",
     },
     include: {
       bookings: {

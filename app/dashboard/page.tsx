@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
-import { BookingTable } from "@/components/dashboard/booking-table";
 import { DashboardFilters } from "@/components/dashboard/dashboard-filters";
 import { DeskCard } from "@/components/dashboard/desk-card";
 import { getCurrentUser } from "@/lib/auth";
-import { getDesksForDate, getUserBookings } from "@/lib/data";
+import { getDesksForDate } from "@/lib/data";
 
 export const metadata = {
   title: "Dashboard | FlexDesk",
@@ -14,6 +13,7 @@ type DashboardPageProps = {
   searchParams: Promise<{
     date?: string;
     department?: string;
+    error?: string;
   }>;
 };
 
@@ -33,10 +33,9 @@ export default async function DashboardPage({
 
   const selectedDepartment = params.department || "";
 
-  const [desks, bookings] = await Promise.all([
-    getDesksForDate(selectedDate, selectedDepartment),
-    getUserBookings(user.id),
-  ]);
+  const errorMessage = params.error;
+
+  const desks = await getDesksForDate(selectedDate, selectedDepartment);
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -46,6 +45,12 @@ export default async function DashboardPage({
           Welcome back, {user.name || user.email}
         </p>
       </div>
+
+      {errorMessage && (
+         <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {errorMessage}
+         </div>
+      )}
 
       <div className="space-y-8">
         <DashboardFilters />
@@ -72,14 +77,6 @@ export default async function DashboardPage({
               </p>
             </div>
           )}
-        </section>
-
-        <section>
-          <h2 className="mb-4 text-xl font-semibold text-gray-900">
-            My bookings
-          </h2>
-
-          <BookingTable bookings={bookings} />
         </section>
       </div>
     </main>

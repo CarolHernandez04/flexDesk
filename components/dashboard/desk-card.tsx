@@ -17,7 +17,7 @@ type DeskCardProps = {
 };
 
 export function DeskCard({ desk, selectedDate }: DeskCardProps) {
-  const isUnderMaintenance = desk.status === "MAINTENANCE";
+  const isUnavailable = desk.status !== "AVAILABLE";
 
   return (
     <article className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
@@ -49,10 +49,10 @@ export function DeskCard({ desk, selectedDate }: DeskCardProps) {
         })}
       </div>
 
-      {isUnderMaintenance ? (
-        <p className="rounded-lg bg-yellow-50 p-3 text-sm text-yellow-700">
-          This desk is currently under maintenance.
-        </p>
+      {isUnavailable ? (
+       <p className="rounded-lg bg-yellow-50 p-3 text-sm text-yellow-700">
+         This desk is currently {desk.status.toLowerCase()}.
+       </p>
       ) : (
         <BookingForm deskId={desk.id} selectedDate={selectedDate} />
       )}

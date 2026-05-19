@@ -1,145 +1,179 @@
 "use client";
 
-import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { LogOut, Menu, X } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
+import { Menu, X } from "lucide-react";
 
 export function Navbar() {
-  const { data: session } = useSession();
-  const router = useRouter();
+  const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleSignOut = async () => {
-    await signOut({ redirect: false });
-    router.push("/");
+  const isLoggedIn = status === "authenticated";
+  const isAdmin = session?.user?.role === "ADMIN";
+
+  const closeMenu = () => {
+    setIsOpen(false);
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-              FD
-            </div>
-            <span className="font-bold text-lg text-gray-900 hidden sm:block">
-              FlexDesk
-            </span>
-          </Link>
-
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-4">
-            {session ? (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="text-gray-700 hover:text-blue-600 transition"
-                >
-                  Dashboard
-                </Link>
-                {session.user?.role === "ADMIN" && (
-                  <Link
-                    href="/admin"
-                    className="text-gray-700 hover:text-blue-600 transition"
-                  >
-                    Admin
-                  </Link>
-                )}
-                <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-                  <span className="text-sm text-gray-700">{session.user?.email}</span>
-                  <button
-                    onClick={handleSignOut}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition"
-                    title="Sign out"
-                  >
-                    <LogOut className="w-5 h-5 text-gray-600" />
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="text-gray-700 hover:text-blue-600 transition"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/register"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                >
-                  Register
-                </Link>
-              </>
-            )}
+    <header className="border-b border-gray-200 bg-white shadow-sm">
+      <nav className="container mx-auto flex items-center justify-between px-4 py-4">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-3" onClick={closeMenu}>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-lg font-bold text-white">
+            FD
           </div>
+          <span className="text-2xl font-bold text-gray-900">FlexDesk</span>
+        </Link>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
-          >
-            {isOpen ? (
-              <X className="w-6 h-6 text-gray-600" />
-            ) : (
-              <Menu className="w-6 h-6 text-gray-600" />
-            )}
-          </button>
+        {/* Mobile menu button */}
+        <button
+          type="button"
+          className="rounded-lg p-2 text-gray-700 hover:bg-gray-100 md:hidden"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label="Open navigation menu"
+        >
+          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
+
+        {/* Desktop navigation */}
+        <div className="hidden items-center gap-6 md:flex">
+          {!isLoggedIn && (
+           <Link href="/" className="text-gray-700 hover:text-blue-600">
+              Home
+           </Link>
+           )}
+
+         {isLoggedIn && (
+            <>
+              <Link
+                href="/dashboard"
+                className="text-gray-700 hover:text-blue-600"
+              >
+                Dashboard
+              </Link>
+
+              <Link
+                href="/bookings"
+                className="text-gray-700 hover:text-blue-600"
+              >
+                My Bookings
+              </Link>
+
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="text-gray-700 hover:text-blue-600"
+                >
+                  Admin
+                </Link>
+              )}
+
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="rounded-lg bg-gray-100 px-4 py-2 text-gray-900 hover:bg-gray-200"
+              >
+                Sign out
+              </button>
+            </>
+          )}
+
+          {!isLoggedIn && status !== "loading" && (
+            <>
+              <Link href="/login" className="text-gray-700 hover:text-blue-600">
+                Sign in
+              </Link>
+
+              <Link
+                href="/register"
+                className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              >
+                Register
+              </Link>
+            </>
+          )}
         </div>
+      </nav>
 
-        {/* Mobile Menu */}
-        {isOpen && (
-          <div className="md:hidden pb-4 space-y-2">
-            {session ? (
+      {/* Mobile navigation menu */}
+      {isOpen && (
+        <div className="border-t border-gray-200 bg-white md:hidden">
+          <div className="container mx-auto flex flex-col gap-3 px-4 py-4">
+            {!isLoggedIn && (
+              <Link
+                href="/"
+                onClick={closeMenu}
+                className="text-gray-700 hover:text-blue-600"
+              >
+                Home
+              </Link>
+            )}
+
+            {isLoggedIn && (
               <>
                 <Link
                   href="/dashboard"
-                  className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeMenu}
+                  className="text-gray-700 hover:text-blue-600"
                 >
                   Dashboard
                 </Link>
-                {session.user?.role === "ADMIN" && (
+
+                <Link
+                  href="/bookings"
+                  onClick={closeMenu}
+                  className="text-gray-700 hover:text-blue-600"
+                >
+                  My Bookings
+                </Link>
+
+                {isAdmin && (
                   <Link
                     href="/admin"
-                    className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                    onClick={() => setIsOpen(false)}
+                    onClick={closeMenu}
+                    className="text-gray-700 hover:text-blue-600"
                   >
                     Admin
                   </Link>
                 )}
+
                 <button
-                  onClick={handleSignOut}
-                  className="w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center gap-2"
+                  type="button"
+                  onClick={() => {
+                    closeMenu();
+                    signOut({ callbackUrl: "/" });
+                  }}
+                  className="rounded-lg bg-gray-100 px-4 py-2 text-left text-gray-900 hover:bg-gray-200"
                 >
-                  <LogOut className="w-4 h-4" />
-                  Sign Out
+                  Sign out
                 </button>
               </>
-            ) : (
+            )}
+
+            {!isLoggedIn && status !== "loading" && (
               <>
                 <Link
                   href="/login"
-                  className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeMenu}
+                  className="text-gray-700 hover:text-blue-600"
                 >
-                  Login
+                  Sign in
                 </Link>
+
                 <Link
                   href="/register"
-                  className="block px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeMenu}
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
                 >
                   Register
                 </Link>
               </>
             )}
           </div>
-        )}
-      </div>
-    </nav>
+        </div>
+      )}
+    </header>
   );
 }
