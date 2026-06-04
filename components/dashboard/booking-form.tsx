@@ -10,11 +10,17 @@ import { TIME_SLOTS } from "@/lib/utils";
 type BookingFormProps = {
   deskId: string;
   selectedDate: string;
+  bookings: {
+    id: string;
+    timeSlot: string;
+    status: string;
+  }[];
 };
 
 export function BookingForm({
   deskId,
   selectedDate,
+  bookings,
 }: BookingFormProps) {
   const router = useRouter();
 
@@ -38,6 +44,24 @@ export function BookingForm({
       router.refresh();
     }, 500);
   }
+
+  const morningBooked = bookings.some(
+    (booking) =>
+      booking.timeSlot === "MORNING" &&
+      booking.status !== "CANCELLED"
+  );
+
+  const afternoonBooked = bookings.some(
+    (booking) =>
+      booking.timeSlot === "AFTERNOON" &&
+      booking.status !== "CANCELLED"
+  );
+
+  const fullDayBooked = bookings.some(
+    (booking) =>
+      booking.timeSlot === "FULL_DAY" &&
+      booking.status !== "CANCELLED"
+  );
 
   return (
     <>
@@ -75,16 +99,34 @@ export function BookingForm({
             defaultValue="MORNING"
             className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
           >
-            <option value="MORNING">
-              {TIME_SLOTS.MORNING}
+            <option
+              value="MORNING"
+              disabled={morningBooked || fullDayBooked}
+            >
+             {TIME_SLOTS.MORNING}
+              {morningBooked ? " (Booked)" : ""}
             </option>
 
-            <option value="AFTERNOON">
+            <option
+             value="AFTERNOON"
+             disabled={afternoonBooked || fullDayBooked}
+            >
               {TIME_SLOTS.AFTERNOON}
+              {afternoonBooked ? " (Booked)" : ""}
             </option>
 
-            <option value="FULL_DAY">
+            <option
+              value="FULL_DAY"
+              disabled={
+                fullDayBooked ||
+                morningBooked ||
+                afternoonBooked
+              }
+            >
               {TIME_SLOTS.FULL_DAY}
+              {(morningBooked || afternoonBooked)
+                ? " (Unavailable)"
+                : ""}
             </option>
           </select>
         </div>

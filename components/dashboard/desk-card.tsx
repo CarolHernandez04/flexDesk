@@ -54,7 +54,11 @@ export function DeskCard({ desk, selectedDate }: DeskCardProps) {
          This desk is currently {desk.status.toLowerCase()}.
        </p>
       ) : (
-        <BookingForm deskId={desk.id} selectedDate={selectedDate} />
+        <BookingForm
+          deskId={desk.id}
+          selectedDate={selectedDate}
+          bookings={desk.bookings}
+        />
       )}
     </article>
   );
