@@ -16,8 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
-      <body className="bg-gray-50">
+    <html lang="en" className="light">
+      <body className="bg-white text-gray-900">
         <SessionProvider>
           <Navbar />
           <main className="min-h-[calc(100vh-64px)]">{children}</main>

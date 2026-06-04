@@ -12,8 +12,11 @@ type ExistingBooking = {
   status: string;
 };
 
-function redirectWithError(date: string, message: string): never {
-  redirect(`/dashboard?date=${date}&error=${encodeURIComponent(message)}`);
+function error(message: string) {
+  return {
+    success: false as const,
+    error: message,
+  };
 }
 
 export async function createBookingAction(formData: FormData) {
@@ -31,13 +34,13 @@ export async function createBookingAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirectWithError(
-      String(formData.get("date") || ""),
+    return error(
       parsed.error.issues[0]?.message || "Invalid booking data"
     );
   }
 
   const { deskId, date, timeSlot, notes } = parsed.data;
+
   const bookingDate = new Date(`${date}T00:00:00.000Z`);
 
   const desk = await prisma.desk.findUnique({
@@ -47,35 +50,36 @@ export async function createBookingAction(formData: FormData) {
   });
 
   if (!desk) {
-    redirectWithError(date, "Desk not found");
+    return error("Desk not found");
   }
 
   const dayStatus = await prisma.deskDayStatus.findUnique({
-  where: {
-    deskId_date: {
-      deskId,
-      date: bookingDate,
+    where: {
+      deskId_date: {
+        deskId,
+        date: bookingDate,
+      },
     },
-  },
-});
+  });
 
   const effectiveStatus = dayStatus?.status || desk.status;
 
   if (effectiveStatus !== "AVAILABLE") {
-    redirectWithError(date, "This desk is not available on this date");
+    return error("This desk is not available on this date");
   }
 
-  const existingBookings: ExistingBooking[] = await prisma.booking.findMany({
-    where: {
-      deskId,
-      date: bookingDate,
-    },
-    select: {
-      id: true,
-      timeSlot: true,
-      status: true,
-    },
-  });
+  const existingBookings: ExistingBooking[] =
+    await prisma.booking.findMany({
+      where: {
+        deskId,
+        date: bookingDate,
+      },
+      select: {
+        id: true,
+        timeSlot: true,
+        status: true,
+      },
+    });
 
   const activeBookings = existingBookings.filter(
     (booking) => booking.status !== "CANCELLED"
@@ -94,12 +98,13 @@ export async function createBookingAction(formData: FormData) {
   });
 
   if (hasConflict) {
-    redirectWithError(date, "Desk already booked for this time slot");
+    return error("Desk already booked for this time slot");
   }
 
   const cancelledBookingWithSameSlot = existingBookings.find(
     (booking) =>
-      booking.timeSlot === timeSlot && booking.status === "CANCELLED"
+      booking.timeSlot === timeSlot &&
+      booking.status === "CANCELLED"
   );
 
   if (cancelledBookingWithSameSlot) {
@@ -131,7 +136,10 @@ export async function createBookingAction(formData: FormData) {
   revalidatePath("/bookings");
   revalidatePath("/admin");
 
-  redirect(`/dashboard?date=${date}`);
+  return {
+    success: true as const,
+    message: "Desk booked successfully",
+  };
 }
 
 export async function cancelBookingAction(formData: FormData) {
@@ -183,4 +191,5 @@ export async function cancelBookingAction(formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath("/bookings");
   revalidatePath("/admin");
+
 }
