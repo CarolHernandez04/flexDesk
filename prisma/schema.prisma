@@ -60,6 +60,8 @@ model Desk {
   location   String?
   features   String[]   @default([])
 
+  availableSlots String[] @default(["MORNING", "AFTERNOON", "FULL_DAY"])
+
   bookings    Booking[]
   dayStatuses DeskDayStatus[]
 

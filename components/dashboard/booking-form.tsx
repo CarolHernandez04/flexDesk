@@ -10,6 +10,7 @@ import { TIME_SLOTS } from "@/lib/utils";
 type BookingFormProps = {
   deskId: string;
   selectedDate: string;
+  availableSlots: string[];
   bookings: {
     id: string;
     timeSlot: string;
@@ -21,6 +22,7 @@ export function BookingForm({
   deskId,
   selectedDate,
   bookings,
+  availableSlots,
 }: BookingFormProps) {
   const router = useRouter();
 
@@ -96,38 +98,43 @@ export function BookingForm({
           <select
             id={`timeSlot-${deskId}`}
             name="timeSlot"
-            defaultValue="MORNING"
             className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
           >
-            <option
-              value="MORNING"
-              disabled={morningBooked || fullDayBooked}
-            >
-             {TIME_SLOTS.MORNING}
-              {morningBooked ? " (Booked)" : ""}
-            </option>
+            {availableSlots.includes("MORNING") && (
+              <option
+                value="MORNING"
+                disabled={morningBooked || fullDayBooked}
+              >
+                {TIME_SLOTS.MORNING}
+                {morningBooked ? " (Booked)" : ""}
+              </option>
+            )}
 
-            <option
-             value="AFTERNOON"
-             disabled={afternoonBooked || fullDayBooked}
-            >
-              {TIME_SLOTS.AFTERNOON}
-              {afternoonBooked ? " (Booked)" : ""}
-            </option>
+            {availableSlots.includes("AFTERNOON") && (
+              <option
+                value="AFTERNOON"
+                disabled={afternoonBooked || fullDayBooked}
+              >
+                {TIME_SLOTS.AFTERNOON}
+                {afternoonBooked ? " (Booked)" : ""}
+              </option>
+            )}
 
-            <option
-              value="FULL_DAY"
-              disabled={
-                fullDayBooked ||
-                morningBooked ||
-                afternoonBooked
-              }
-            >
-              {TIME_SLOTS.FULL_DAY}
-              {(morningBooked || afternoonBooked)
-                ? " (Unavailable)"
-                : ""}
-            </option>
+            {availableSlots.includes("FULL_DAY") && (
+              <option
+                value="FULL_DAY"
+                disabled={
+                  fullDayBooked ||
+                  morningBooked ||
+                 afternoonBooked
+                }
+              >
+                {TIME_SLOTS.FULL_DAY}
+                {(morningBooked || afternoonBooked)
+                  ? " (Unavailable)"
+                  : ""}
+              </option>
+            )}
           </select>
         </div>
 

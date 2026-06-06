@@ -2,6 +2,7 @@ import {
   deleteDeskAction,
   updateDeskDayStatusAction,
   updateDeskDepartmentAction,
+  updateDeskSlotsAction,
 } from "@/app/actions/desk-actions";
 import { Button } from "@/components/button";
 
@@ -13,6 +14,7 @@ type DeskStatusFormProps = {
     effectiveStatus: string;
     department: string | null;
     location: string | null;
+    availableSlots: string[];
   };
   selectedDate: string;
 };
@@ -43,9 +45,9 @@ export function DeskStatusForm({ desk, selectedDate }: DeskStatusFormProps) {
             className="w-36 rounded-lg border border-gray-300 px-3 py-2 text-sm"
           />
 
-         <Button
+          <Button
             type="submit"
-           variant="secondary"
+            variant="secondary"
           >
             Update
           </Button>
@@ -71,6 +73,52 @@ export function DeskStatusForm({ desk, selectedDate }: DeskStatusFormProps) {
 
           <Button type="submit" variant="secondary">
             Save
+          </Button>
+        </form>
+      </td>
+
+      <td className="px-4 py-3">
+        <form action={updateDeskSlotsAction}>
+          <input type="hidden" name="deskId" value={desk.id} />
+
+          <div className="flex flex-col gap-1 text-sm">
+            <label>
+              <input
+                type="checkbox"
+                name="availableSlots"
+                value="MORNING"
+                defaultChecked={desk.availableSlots.includes("MORNING")}
+              />{" "}
+              Morning
+            </label>
+
+            <label>
+              <input
+                type="checkbox"
+                name="availableSlots"
+                value="AFTERNOON"
+                defaultChecked={desk.availableSlots.includes("AFTERNOON")}
+              />{" "}
+              Afternoon
+            </label>
+
+            <label>
+              <input
+                type="checkbox"
+                name="availableSlots"
+                value="FULL_DAY"
+                defaultChecked={desk.availableSlots.includes("FULL_DAY")}
+              />{" "}
+              Full day
+            </label>
+          </div>
+
+          <Button
+            type="submit"
+            variant="secondary"
+            className="mt-2"
+          >
+            Update
           </Button>
         </form>
       </td>

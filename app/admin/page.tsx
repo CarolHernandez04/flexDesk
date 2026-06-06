@@ -25,6 +25,7 @@ type AdminDesk = {
   effectiveStatus: string;
   department: string | null;
   location: string | null;
+  availableSlots: string[];
 };
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {

@@ -7,11 +7,16 @@ type DeskWithDayStatus = {
   department: string | null;
   location: string | null;
   features?: string[];
+
+  availableSlots: string[];
+
   createdAt?: Date;
   updatedAt?: Date;
+
   dayStatuses: {
     status: string;
   }[];
+
   bookings?: {
     id: string;
     timeSlot: string;

@@ -47,6 +47,10 @@ export async function createDeskAction(formData: FormData) {
     throw new Error("A desk with this identifier already exists");
   }
 
+  const availableSlots = formData.getAll(
+    "availableSlots"
+  ) as string[];
+
   await prisma.desk.create({
     data: {
       identifier: parsed.data.identifier,
@@ -54,6 +58,7 @@ export async function createDeskAction(formData: FormData) {
       location: parsed.data.location,
       status: "AVAILABLE",
       features: ["monitor", "keyboard", "mouse"],
+      availableSlots,
     },
   });
 
@@ -162,6 +167,30 @@ export async function updateDeskDepartmentAction(
     },
     data: {
       department,
+    },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/dashboard");
+}
+
+export async function updateDeskSlotsAction(
+  formData: FormData
+) {
+  await requireAdmin();
+
+  const deskId = String(formData.get("deskId"));
+
+  const availableSlots = formData.getAll(
+    "availableSlots"
+  ) as string[];
+
+  await prisma.desk.update({
+    where: {
+      id: deskId,
+    },
+    data: {
+      availableSlots,
     },
   });
 

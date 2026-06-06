@@ -19,6 +19,7 @@ export function CreateDeskForm() {
           >
             Identifier
           </label>
+
           <input
             id="identifier"
             name="identifier"
@@ -34,6 +35,7 @@ export function CreateDeskForm() {
           >
             Department
           </label>
+
           <select
             id="department"
             name="department"
@@ -53,6 +55,7 @@ export function CreateDeskForm() {
           >
             Location
           </label>
+
           <input
             id="location"
             name="location"
@@ -62,7 +65,49 @@ export function CreateDeskForm() {
         </div>
       </div>
 
-      <Button type="submit" variant="primary" className="mt-4">
+      <div className="mt-4">
+        <p className="mb-2 text-sm font-medium text-gray-700">
+          Available time slots
+        </p>
+
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="availableSlots"
+              value="MORNING"
+              defaultChecked
+            />
+            Morning
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="availableSlots"
+              value="AFTERNOON"
+              defaultChecked
+            />
+            Afternoon
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="availableSlots"
+              value="FULL_DAY"
+              defaultChecked
+            />
+            Full day
+          </label>
+        </div>
+      </div>
+
+      <Button
+        type="submit"
+        variant="primary"
+        className="mt-4"
+      >
         Create desk
       </Button>
     </form>

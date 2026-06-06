@@ -8,6 +8,7 @@ type DeskCardProps = {
     effectiveStatus: string;
     department: string | null;
     location: string | null;
+    availableSlots: string[];
     bookings: {
       id: string;
       timeSlot: string;
@@ -59,6 +60,7 @@ export function DeskCard({ desk, selectedDate }: DeskCardProps) {
           deskId={desk.id}
           selectedDate={selectedDate}
           bookings={desk.bookings}
+          availableSlots={desk.availableSlots}
         />
       )}
     </article>

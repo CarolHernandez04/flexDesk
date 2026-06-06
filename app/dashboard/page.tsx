@@ -68,6 +68,11 @@ export default async function DashboardPage({
                 desk={{
                   ...desk,
                   bookings: desk.bookings ?? [],
+                   availableSlots: desk.availableSlots ?? [
+                    "MORNING",
+                    "AFTERNOON",
+                    "FULL_DAY",
+                  ],
                 }}
                 selectedDate={selectedDate}
               />
