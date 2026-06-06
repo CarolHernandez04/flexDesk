@@ -6,7 +6,6 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   createDeskSchema,
-  updateDeskStatusSchema,
   updateDeskDayStatusSchema,
 } from "@/lib/validations";
 
@@ -20,8 +19,6 @@ async function requireAdmin() {
   if (user.role !== "ADMIN") {
     redirect("/dashboard");
   }
-
-  return user;
 }
 
 export async function createDeskAction(formData: FormData) {
@@ -66,37 +63,12 @@ export async function createDeskAction(formData: FormData) {
   revalidatePath("/dashboard");
 }
 
-export async function updateDeskStatusAction(formData: FormData) {
-  await requireAdmin();
-
-  const parsed = updateDeskStatusSchema.safeParse({
-    deskId: formData.get("deskId"),
-    status: formData.get("status"),
-  });
-
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues[0]?.message || "Invalid desk status");
-  }
-
-  await prisma.desk.update({
-    where: {
-      id: parsed.data.deskId,
-    },
-    data: {
-      status: parsed.data.status,
-    },
-  });
-
-  revalidatePath("/admin");
-  revalidatePath("/dashboard");
-}
-
 export async function deleteDeskAction(formData: FormData) {
   await requireAdmin();
 
-  const deskId = String(formData.get("deskId"));
+  const deskId = formData.get("deskId");
 
-  if (!deskId) {
+  if (typeof deskId !== "string") {
     throw new Error("Desk id is required");
   }
 
@@ -154,11 +126,15 @@ export async function updateDeskDepartmentAction(
 ) {
   await requireAdmin();
 
-  const deskId = String(formData.get("deskId"));
-  const department = String(formData.get("department"));
+  const deskId = formData.get("deskId");
+  const department = formData.get("department");
 
-  if (!deskId) {
+  if (typeof deskId !== "string") {
     throw new Error("Desk id is required");
+  }
+
+  if (typeof department !== "string") {
+    throw new Error("Department is required");
   }
 
   await prisma.desk.update({
@@ -179,7 +155,11 @@ export async function updateDeskSlotsAction(
 ) {
   await requireAdmin();
 
-  const deskId = String(formData.get("deskId"));
+  const deskId = formData.get("deskId");
+
+  if (typeof deskId !== "string") {
+    throw new Error("Desk id is required");
+  }
 
   const availableSlots = formData.getAll(
     "availableSlots"

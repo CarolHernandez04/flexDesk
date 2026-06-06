@@ -101,36 +101,16 @@ export async function createBookingAction(formData: FormData) {
     return error("Desk already booked for this time slot");
   }
 
-  const cancelledBookingWithSameSlot = existingBookings.find(
-    (booking) =>
-      booking.timeSlot === timeSlot &&
-      booking.status === "CANCELLED"
-  );
-
-  if (cancelledBookingWithSameSlot) {
-    await prisma.booking.update({
-      where: {
-        id: cancelledBookingWithSameSlot.id,
-      },
-      data: {
-        userId: user.id,
-        status: "CONFIRMED",
-        cancelledAt: null,
-        notes,
-      },
-    });
-  } else {
-    await prisma.booking.create({
-      data: {
-        userId: user.id,
-        deskId,
-        date: bookingDate,
-        timeSlot,
-        notes,
-        status: "CONFIRMED",
-      },
-    });
-  }
+  await prisma.booking.create({
+    data: {
+      userId: user.id,
+      deskId,
+      date: bookingDate,
+      timeSlot,
+      notes,
+      status: "CONFIRMED",
+    },
+  });
 
   revalidatePath("/dashboard");
   revalidatePath("/bookings");
@@ -149,9 +129,9 @@ export async function cancelBookingAction(formData: FormData) {
     redirect("/login");
   }
 
-  const bookingId = String(formData.get("bookingId"));
+  const bookingId = formData.get("bookingId");
 
-  if (!bookingId) {
+  if (typeof bookingId !== "string") {
     throw new Error("Booking id is required");
   }
 
