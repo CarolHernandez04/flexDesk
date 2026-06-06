@@ -143,3 +143,28 @@ export async function updateDeskDayStatusAction(formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath("/bookings");
 }
+
+export async function updateDeskDepartmentAction(
+  formData: FormData
+) {
+  await requireAdmin();
+
+  const deskId = String(formData.get("deskId"));
+  const department = String(formData.get("department"));
+
+  if (!deskId) {
+    throw new Error("Desk id is required");
+  }
+
+  await prisma.desk.update({
+    where: {
+      id: deskId,
+    },
+    data: {
+      department,
+    },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/dashboard");
+}

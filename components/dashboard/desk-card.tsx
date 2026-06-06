@@ -5,6 +5,7 @@ type DeskCardProps = {
     id: string;
     identifier: string;
     status: string;
+    effectiveStatus: string;
     department: string | null;
     location: string | null;
     bookings: {
@@ -17,7 +18,7 @@ type DeskCardProps = {
 };
 
 export function DeskCard({ desk, selectedDate }: DeskCardProps) {
-  const isUnavailable = desk.status !== "AVAILABLE";
+  const isUnavailable = desk.effectiveStatus !== "AVAILABLE";
 
   return (
     <article className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
@@ -51,7 +52,7 @@ export function DeskCard({ desk, selectedDate }: DeskCardProps) {
 
       {isUnavailable ? (
        <p className="rounded-lg bg-yellow-50 p-3 text-sm text-yellow-700">
-         This desk is currently {desk.status.toLowerCase()}.
+         This desk is currently {desk.effectiveStatus.toLowerCase()}.
        </p>
       ) : (
         <BookingForm

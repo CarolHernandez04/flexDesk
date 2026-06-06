@@ -1,6 +1,7 @@
 import {
   deleteDeskAction,
   updateDeskDayStatusAction,
+  updateDeskDepartmentAction,
 } from "@/app/actions/desk-actions";
 import { Button } from "@/components/button";
 
@@ -23,7 +24,33 @@ export function DeskStatusForm({ desk, selectedDate }: DeskStatusFormProps) {
         {desk.identifier}
       </td>
 
-      <td className="px-4 py-3 text-gray-700">{desk.department}</td>
+      <td className="px-4 py-3">
+        <form
+          action={updateDeskDepartmentAction}
+          className="flex gap-2"
+        >
+          <input
+            type="hidden"
+            name="deskId"
+            value={desk.id}
+          />
+
+          <input
+            type="text"
+            name="department"
+            defaultValue={desk.department ?? ""}
+            placeholder="Department"
+            className="w-36 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          />
+
+         <Button
+            type="submit"
+           variant="secondary"
+          >
+            Update
+          </Button>
+        </form>
+      </td>
 
       <td className="px-4 py-3 text-gray-700">{desk.location}</td>
 
